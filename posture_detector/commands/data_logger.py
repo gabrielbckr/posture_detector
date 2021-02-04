@@ -1,13 +1,14 @@
+import datetime as dt
 import io
 import json
 import time
-import click
-import serial
-import pandas as pd
-import datetime as dt
-from pynput import keyboard
-from posture_detector.utils import constants
 
+import click
+import pandas as pd
+import serial
+from pynput import keyboard
+
+from posture_detector.utils import constants
 
 ser: serial.Serial
 should_stop: int = False
