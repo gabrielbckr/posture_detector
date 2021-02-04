@@ -1,0 +1,7 @@
+pandas
+matplotlib
+scipy
+click
+pynput
+pyserial
+scikit-learn

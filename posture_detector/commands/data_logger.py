@@ -21,7 +21,7 @@ def set_on_keyboard_press_action(key):
         last_pressed_key = key
         click.echo(f'Key pressed, new label set: {last_pressed_key}.')
     except AttributeError:
-        print('special key {0} pressed'.format(key))
+        click.echo('special key {0} pressed'.format(key))
 
 
 def set_on_keyboard_release_action(key):
@@ -39,8 +39,9 @@ def start_keyboard_job():
     listener.start()
 
 
-def set_file_writer_job(file):
+def set_file_writer_job(s, file):
     global ser, last_pressed_key, should_stop
+    ser = s
     writing_file = io.open(file, 'w+')
     while not should_stop:
         ser.flush()
