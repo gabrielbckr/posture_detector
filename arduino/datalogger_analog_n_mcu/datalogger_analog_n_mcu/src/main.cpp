@@ -69,6 +69,7 @@ void MPU6050_Init(){
 
 void setup() {
   Serial.begin(115200);
+  pinMode(FLEX_SENSOR_PIN, INPUT);
   Wire.begin(sda, scl);
   MPU6050_Init();
 }
@@ -87,13 +88,14 @@ void loop() {
   Gy = (double)GyroY/GyroScaleFactor;
   Gz = (double)GyroZ/GyroScaleFactor;
 
-  Serial.print("Ax: "); Serial.print(Ax);
-  Serial.print(" Ay: "); Serial.print(Ay);
-  Serial.print(" Az: "); Serial.print(Az);
-  Serial.print(" T: "); Serial.print(T);
-  Serial.print(" Gx: "); Serial.print(Gx);
-  Serial.print(" Gy: "); Serial.print(Gy);
-  Serial.print(" Gz: "); Serial.print(Gz);
-  Serial.print(" FlS: "); Serial.println(analogRead(FLEX_SENSOR_PIN));
+  Serial.print("{\"Ax\": "); Serial.print(Ax);
+  Serial.print(",\"Ay\": "); Serial.print(Ay);
+  Serial.print(",\"Az\": "); Serial.print(Az);
+  Serial.print(",\"T\": "); Serial.print(T);
+  Serial.print(",\"Gx\": "); Serial.print(Gx);
+  Serial.print(",\"Gy\": "); Serial.print(Gy);
+  Serial.print(",\"Gz\": "); Serial.print(Gz);
+  Serial.print(",\"FlS\": "); Serial.print(analogRead(FLEX_SENSOR_PIN));
+  Serial.println("}");
   delay(150);
 }

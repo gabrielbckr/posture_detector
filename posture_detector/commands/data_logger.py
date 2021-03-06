@@ -1,5 +1,6 @@
 import datetime as dt
 import io
+import os
 import json
 import time
 
@@ -74,3 +75,51 @@ def get_now_string():
     d = d.replace(' ', '_')
     d = d.replace(':', '_')
     return d
+
+
+def create_metadata(path):
+    df = pd.read_csv(path, sep=';')
+    metadata_path = os.getenv(constants.metadata, None)
+    if metadata_path is None:
+        metadata_path = click.prompt('Enter metadata path: ', type=str)
+
+    column_descriptions = {}
+    if click.prompt('Add column labels?', type=str) == 'yes':
+        for column in df.columns:
+            desc = click.prompt(f'Enter description to column {column}: ', type=str, default='')
+            column_descriptions.update({column: desc})
+
+    description = click.prompt("Write the experiment description: ", type=str, default='')
+
+    try:
+        if click.prompt('Would you like to replace keys with label values?', type=str) == 'yes':
+            keys_descriptions = {}
+            values = {}
+            for keys in df[constants.label].unique():
+                val = click.prompt(f"Enter new value for key '{keys}' of column {constants.label}: ", type=str, default='')
+                values.update({keys: val})
+                desc = click.prompt(f"Enter description to key '{keys}' of column {constants.label}: ", type=str, default='')
+                keys_descriptions.update({keys: desc})
+        else:
+            keys_descriptions = {}
+            for keys in df[constants.label].unique():
+                desc = click.prompt(f"Enter description to key '{keys}' of column {constants.label}: ", type=str, default='')
+                keys_descriptions.update({keys: desc})
+    except KeyError:
+        print('Could not access Label')
+
+    metadata = {
+        'experiment': str(path),
+        'description': description,
+        'columns_description': column_descriptions,
+        'keys_descriptions': keys_descriptions
+    }
+
+    with io.open(str(metadata_path), 'r+') as file:
+        data = json.loads(''.join(file.readlines()))
+    if not isinstance(data, list):
+        data = [metadata]
+    else:
+        data.append(metadata)
+    with io.open(str(metadata_path), 'w+') as file:
+        json.dump(data, file)

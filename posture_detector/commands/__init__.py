@@ -30,3 +30,7 @@ def data_logger(path, port, baud):
         return
     start_keyboard_job()
     set_file_writer_job(ser, Path(path))
+
+    should_create_metadata = click.prompt('Do you want to create metadata?', type=bool)
+    if should_create_metadata:
+        create_metadata(Path(path))
