@@ -107,6 +107,8 @@ def create_metadata(path):
                 keys_descriptions.update({keys: desc})
     except KeyError:
         print('Could not access Label')
+        print(df.head())
+        print(df.columns)
 
     metadata = {
         'experiment': str(path),

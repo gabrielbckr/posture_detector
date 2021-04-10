@@ -5,3 +5,5 @@ click
 pynput
 pyserial
 scikit-learn
+fastapi
+uvicorn[standard]
