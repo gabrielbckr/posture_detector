@@ -42,6 +42,6 @@ def data_logger(path, port, baud):
 @cli_app.command()
 def run_api():
     loop = asyncio.get_event_loop()
-    config = uvicorn.Config(app=api, port=8686, loop=loop)
+    config = uvicorn.Config(app=api, host='192.168.1.239', port=8686, loop=loop)
     server = uvicorn.Server(config)
     loop.run_until_complete(server.serve())

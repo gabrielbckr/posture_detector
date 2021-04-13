@@ -1,5 +1,32 @@
 #include <Arduino.h>
 #include <Wire.h>
+#include <ESP8266WiFi.h>
+#include <ESP8266HTTPClient.h>
+#include <WiFiClient.h>
+
+
+const char* ssid = "Becker2";
+const char* password = "theovoador";
+String serverName = "http://192.168.1.239:8686/data/10";
+
+void setupWifiConnection(){
+  WiFi.begin(ssid, password);
+  Serial.println("Connecting");
+  while(WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+}
+
+
+HTTPClient http;
+
+
+void setupHtpp(){
+  String serverPath = serverName ;
+  http.begin(serverPath.c_str());
+}
+
 
 // MPU6050 Slave Device Address
 const uint8_t MPU6050SlaveAddress = 0x68;
@@ -55,23 +82,26 @@ void Read_RawValue(uint8_t deviceAddress, uint8_t regAddress){
 //configure MPU6050
 void MPU6050_Init(){
   delay(150);
-  I2C_Write(MPU6050SlaveAddress, MPU6050_REGISTER_SMPLRT_DIV, 0x07);
-  I2C_Write(MPU6050SlaveAddress, MPU6050_REGISTER_PWR_MGMT_1, 0x01);
-  I2C_Write(MPU6050SlaveAddress, MPU6050_REGISTER_PWR_MGMT_2, 0x00);
-  I2C_Write(MPU6050SlaveAddress, MPU6050_REGISTER_CONFIG, 0x00);
-  I2C_Write(MPU6050SlaveAddress, MPU6050_REGISTER_GYRO_CONFIG, 0x00);//set +/-250 degree/second full scale
+  I2C_Write(MPU6050SlaveAddress, MPU6050_REGISTER_SMPLRT_DIV,   0x07);
+  I2C_Write(MPU6050SlaveAddress, MPU6050_REGISTER_PWR_MGMT_1,   0x01);
+  I2C_Write(MPU6050SlaveAddress, MPU6050_REGISTER_PWR_MGMT_2,   0x00);
+  I2C_Write(MPU6050SlaveAddress, MPU6050_REGISTER_CONFIG,       0x00);
+  I2C_Write(MPU6050SlaveAddress, MPU6050_REGISTER_GYRO_CONFIG,  0x00);//set +/-250 degree/second full scale
   I2C_Write(MPU6050SlaveAddress, MPU6050_REGISTER_ACCEL_CONFIG, 0x00);// set +/- 2g full scale
-  I2C_Write(MPU6050SlaveAddress, MPU6050_REGISTER_FIFO_EN, 0x00);
-  I2C_Write(MPU6050SlaveAddress, MPU6050_REGISTER_INT_ENABLE, 0x01);
+  I2C_Write(MPU6050SlaveAddress, MPU6050_REGISTER_FIFO_EN,      0x00);
+  I2C_Write(MPU6050SlaveAddress, MPU6050_REGISTER_INT_ENABLE,   0x01);
+  I2C_Write(MPU6050SlaveAddress, MPU6050_REGISTER_USER_CTRL,    0x00);
   I2C_Write(MPU6050SlaveAddress, MPU6050_REGISTER_SIGNAL_PATH_RESET, 0x00);
-  I2C_Write(MPU6050SlaveAddress, MPU6050_REGISTER_USER_CTRL, 0x00);
 }
 
 void setup() {
-  Serial.begin(115200);
+  Serial.begin(9600);
   pinMode(FLEX_SENSOR_PIN, INPUT);
   Wire.begin(sda, scl);
   MPU6050_Init();
+
+  setupWifiConnection();
+  setupHtpp();
 }
 
 void loop() {
@@ -88,14 +118,16 @@ void loop() {
   Gy = (double)GyroY/GyroScaleFactor;
   Gz = (double)GyroZ/GyroScaleFactor;
 
-  Serial.print("{\"Ax\": "); Serial.print(Ax);
-  Serial.print(",\"Ay\": "); Serial.print(Ay);
-  Serial.print(",\"Az\": "); Serial.print(Az);
-  Serial.print(",\"T\": "); Serial.print(T);
-  Serial.print(",\"Gx\": "); Serial.print(Gx);
-  Serial.print(",\"Gy\": "); Serial.print(Gy);
-  Serial.print(",\"Gz\": "); Serial.print(Gz);
-  Serial.print(",\"FlS\": "); Serial.print(analogRead(FLEX_SENSOR_PIN));
-  Serial.println("}");
+  // Serial.print("{\"Ax\": "); Serial.print(Ax);
+  // Serial.print(",\"Ay\": "); Serial.print(Ay);
+  // Serial.print(",\"Az\": "); Serial.print(Az);
+  // Serial.print(",\"T\": "); Serial.print(T);
+  // Serial.print(",\"Gx\": "); Serial.print(Gx);
+  // Serial.print(",\"Gy\": "); Serial.print(Gy);
+  // Serial.print(",\"Gz\": "); Serial.print(Gz);
+  // Serial.print(",\"FlS\": "); Serial.print(analogRead(FLEX_SENSOR_PIN));
+  // Serial.println("}");
   delay(150);
+
+  auto res = http.POST("{\"opa\": "+String(analogRead(FLEX_SENSOR_PIN)) +"}");
 }
