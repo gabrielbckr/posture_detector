@@ -3,11 +3,13 @@
 #include <ESP8266WiFi.h>
 #include <ESP8266HTTPClient.h>
 #include <WiFiClient.h>
+#include <sstream>
 
 
 const char* ssid = "Becker2";
 const char* password = "theovoador";
 String serverName = "http://192.168.1.239:8686/data/10";
+
 
 void setupWifiConnection(){
   WiFi.begin(ssid, password);
@@ -16,6 +18,7 @@ void setupWifiConnection(){
     delay(500);
     Serial.print(".");
   }
+  WiFi.macAddress();
 }
 
 
@@ -113,21 +116,25 @@ void loop() {
   Ax = (double)AccelX/AccelScaleFactor;
   Ay = (double)AccelY/AccelScaleFactor;
   Az = (double)AccelZ/AccelScaleFactor;
-  T = (double)Temperature/340+36.53; //temperature formula
+  T  = (double)Temperature/340+36.53; //temperature formula
   Gx = (double)GyroX/GyroScaleFactor;
   Gy = (double)GyroY/GyroScaleFactor;
   Gz = (double)GyroZ/GyroScaleFactor;
 
-  // Serial.print("{\"Ax\": "); Serial.print(Ax);
-  // Serial.print(",\"Ay\": "); Serial.print(Ay);
-  // Serial.print(",\"Az\": "); Serial.print(Az);
-  // Serial.print(",\"T\": "); Serial.print(T);
-  // Serial.print(",\"Gx\": "); Serial.print(Gx);
-  // Serial.print(",\"Gy\": "); Serial.print(Gy);
-  // Serial.print(",\"Gz\": "); Serial.print(Gz);
-  // Serial.print(",\"FlS\": "); Serial.print(analogRead(FLEX_SENSOR_PIN));
-  // Serial.println("}");
   delay(150);
-
-  auto res = http.POST("{\"opa\": "+String(analogRead(FLEX_SENSOR_PIN)) +"}");
+  std::stringstream ss;
+  ss  << "{\"Ax\":" << Ax
+      << ",\"Ay\":" << Ay
+      << ",\"Az\":" << Az
+      << ",\"T\":"  << T
+      << ",\"Gx\":" << Gx
+      << ",\"Gy\":" << Gy
+      << ",\"Gz\":" << Gz
+      << ",\"FlS\":" << analogRead(FLEX_SENSOR_PIN)
+      << "}";
+  auto printable_string = String(ss.str().c_str());//.c_str();
+  #ifdef debug
+  Serial.println(printable_string);
+  #endif
+  auto res = http.POST(printable_string);
 }
