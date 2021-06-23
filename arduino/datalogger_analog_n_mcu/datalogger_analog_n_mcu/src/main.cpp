@@ -15,8 +15,8 @@ void setupWifiConnection(){
   WiFi.begin(ssid, password);
   Serial.println("Connecting");
   while(WiFi.status() != WL_CONNECTED) {
-    delay(500);
     Serial.print(".");
+    delay(500);
   }
   WiFi.macAddress();
 }
@@ -34,16 +34,20 @@ void setupHtpp(){
 // MPU6050 Slave Device Address
 const uint8_t MPU6050SlaveAddress = 0x68;
 
+
 // Select SDA and SCL pins for I2C communication 
 const uint8_t scl = D6;
 const uint8_t sda = D7;
 
+
 // Define pin for Flex Sensor
 const int FLEX_SENSOR_PIN = A0;
+
 
 // sensitivity scale factor respective to full scale setting provided in datasheet 
 const uint16_t AccelScaleFactor = 16384;
 const uint16_t GyroScaleFactor = 131;
+
 
 // MPU6050 few configuration register addresses
 const uint8_t MPU6050_REGISTER_SMPLRT_DIV   =  0x19;
@@ -58,7 +62,9 @@ const uint8_t MPU6050_REGISTER_INT_ENABLE   =  0x38;
 const uint8_t MPU6050_REGISTER_ACCEL_XOUT_H =  0x3B;
 const uint8_t MPU6050_REGISTER_SIGNAL_PATH_RESET  = 0x68;
 
+
 int16_t AccelX, AccelY, AccelZ, Temperature, GyroX, GyroY, GyroZ;
+
 
 void I2C_Write(uint8_t deviceAddress, uint8_t regAddress, uint8_t data){
   Wire.beginTransmission(deviceAddress);
@@ -66,6 +72,7 @@ void I2C_Write(uint8_t deviceAddress, uint8_t regAddress, uint8_t data){
   Wire.write(data);
   Wire.endTransmission();
 }
+
 
 // read all 14 register
 void Read_RawValue(uint8_t deviceAddress, uint8_t regAddress){
@@ -82,6 +89,7 @@ void Read_RawValue(uint8_t deviceAddress, uint8_t regAddress){
   GyroZ = (((int16_t)Wire.read()<<8) | Wire.read());
 }
 
+
 //configure MPU6050
 void MPU6050_Init(){
   delay(150);
@@ -97,6 +105,7 @@ void MPU6050_Init(){
   I2C_Write(MPU6050SlaveAddress, MPU6050_REGISTER_SIGNAL_PATH_RESET, 0x00);
 }
 
+
 void setup() {
   Serial.begin(9600);
   pinMode(FLEX_SENSOR_PIN, INPUT);
@@ -107,8 +116,11 @@ void setup() {
   setupHtpp();
 }
 
+
+double Ax, Ay, Az, T, Gx, Gy, Gz;
+
+
 void loop() {
-  double Ax, Ay, Az, T, Gx, Gy, Gz;
   
   Read_RawValue(MPU6050SlaveAddress, MPU6050_REGISTER_ACCEL_XOUT_H);
   
@@ -135,6 +147,8 @@ void loop() {
   auto printable_string = String(ss.str().c_str());//.c_str();
   #ifdef debug
   Serial.println(printable_string);
-  #endif
+  #else
   auto res = http.POST(printable_string);
+  #endif
+
 }

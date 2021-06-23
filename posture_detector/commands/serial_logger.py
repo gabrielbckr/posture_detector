@@ -3,17 +3,22 @@ import io
 import os
 import json
 import time
-
+from pathlib import Path
 import click
 import pandas as pd
 import serial
 from pynput import keyboard
 
-from posture_detector.utils import constants
+import constants
 
 ser: serial.Serial
 should_stop: int = False
 last_pressed_key: str = ''
+
+
+def get_last_pressed_key():
+    global last_pressed_key
+    return last_pressed_key
 
 
 def set_on_keyboard_press_action(key):
@@ -125,3 +130,27 @@ def create_metadata(path):
         data.append(metadata)
     with io.open(str(metadata_path), 'w+') as file:
         json.dump(data, file)
+
+
+def data_logger_handler(path, port, baud):
+    global should_stop, ser
+    assert isinstance(path, str)
+    assert isinstance(port, str)
+    assert isinstance(baud, int)
+    try:
+        ser = serial.Serial(
+            port=port,
+            baudrate=baud,
+            parity=serial.PARITY_ODD,
+            stopbits=serial.STOPBITS_TWO,
+            bytesize=serial.SEVENBITS
+        )
+    except serial.serialutil.SerialException:
+        click.echo(f'Unavailable serial port: {port}')
+        return
+    start_keyboard_job()
+    set_file_writer_job(ser, Path(path))
+
+    should_create_metadata = click.prompt('Do you want to create metadata?', type=bool)
+    if should_create_metadata:
+        create_metadata(Path(path))
