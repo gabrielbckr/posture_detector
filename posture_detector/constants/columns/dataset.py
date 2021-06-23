@@ -5,4 +5,6 @@ class Record:
     Gx = 'gx'
     Gy = 'gy'
     Gz = 'gz'
-    Flex = 'Label'
+    T = 'Temperature'
+    Flex = 'FlexSensor'
+    Label = 'Label'

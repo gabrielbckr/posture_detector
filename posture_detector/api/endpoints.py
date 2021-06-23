@@ -1,5 +1,6 @@
 from fastapi import FastAPI, Request
 import pandas as pd
+from posture_detector.api import handlers
 
 
 api = FastAPI()
@@ -7,11 +8,7 @@ api = FastAPI()
 
 @api.post("/data/{device_id}")
 async def post_data(device_id: int, payload: Request):
-    content = await payload.json()
-    pd.DataFrame(content.values()).T\
-        .rename(columns=dict(enumerate(content.keys())))\
-        .to_csv('../data/raw/session0', mode='a', header=False)
-    print(content)
+    await handlers.post_data_handler(payload)
     return {"Hello": f"World, {device_id}"}
 
 

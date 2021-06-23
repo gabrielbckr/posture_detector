@@ -7,3 +7,6 @@ pyserial
 scikit-learn
 fastapi
 uvicorn[standard]
+yellowbrick
+seaborn
+optuna
