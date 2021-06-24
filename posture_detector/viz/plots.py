@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
 from sklearn import model_selection
@@ -40,14 +41,20 @@ def plot_radial_feature_comparisons(X, y):
     plt.show()
 
 
-def plot_confusion_matrix(confusion_matrix):
+def plot_confusion_matrix(model, X, y):
+    confusion_matrix = sklearn.metrics.confusion_matrix(
+        y,
+        model.predict(X),
+        normalize='true',
+    )
+    confusion_matrix *= 100
+
     sklearn.metrics.ConfusionMatrixDisplay(
             confusion_matrix,
             display_labels=['Correto', 'Incorreto']
         ).plot(cmap='cividis', values_format='.2g')
     plt.ylabel('Classe Correta')
     plt.xlabel('Classe Predita')
-    plt.show()
 
 
 def plot_auc(model, X_train, X_test, y_train, y_test, classes):
@@ -62,4 +69,31 @@ def plot_feature_importances(X, y):
     feature_viz = FeatureImportances(AdaBoostClassifier())
     feature_viz.fit(X, y)
     feature_viz.show()
+    plt.show()
+
+
+def plot_decision_boundary(model, X, y, variable_1=None, variable_2=None):
+    if not variable_1 or not variable_2:
+        X = sklearn.decomposition.PCA(n_components=2).fit_transform(X, y)
+        X = pd.DataFrame(X)
+        variable_1 = 0
+        variable_2 = 1
+    model.fit(X[[variable_1, variable_2]], y)
+
+    xmin = min(X[variable_1].values)
+    ymin = min(X[variable_2].values)
+    xmax = max(X[variable_1].values)
+    ymax = max(X[variable_2].values)
+
+    xx, yy = np.mgrid[xmin:xmax:.001, ymin:ymax:.01]
+    grid = np.c_[xx.ravel(), yy.ravel()]
+    probs = model.decision_function(grid).reshape(xx.shape)
+
+    f, ax = plt.subplots(figsize=(8, 6))
+    ax.contour(xx, yy, probs, levels=[.5], cmap="Greys", vmin=0, vmax=.6)
+
+    ax.scatter(X[variable_1].values, X[variable_2].values, c=y.values, s=50,
+           cmap="RdBu", vmin=-.2, vmax=1.2,
+           edgecolor="white", linewidth=1)
+
     plt.show()
